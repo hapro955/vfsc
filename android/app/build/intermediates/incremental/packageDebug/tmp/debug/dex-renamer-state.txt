@@ -1,4 +1,4 @@
-#Sat Jan 19 01:22:14 ICT 2019
+#Fri Mar 01 00:14:41 ICT 2019
 base.0=/Users/hans/project/vfsc/android/app/build/intermediates/transforms/dexMerger/debug/0
 path.0=classes.dex
 renamed.0=classes.dex
