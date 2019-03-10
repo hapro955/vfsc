@@ -5,6 +5,7 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 import LoginContainer from './src/view/containers/login/LoginContainer';
 import WelcomContainer from './src/view/containers/login/WelcomContainer';
 import AccountAuthenticateContainer from './src/view/containers/login/AccountAuthenticateContainer';
+import ChangePasswordContainer from './src/view/containers/login/ChangePasswordContainer';
 
 //production-plan
 import ProductionPlanContainer from './src/view/containers/production-plan/ProductionPlanContainer';
@@ -32,6 +33,7 @@ const AppNavigator = createStackNavigator(
     Notification: {screen: NotificationContainer},
     PerformWork: {screen: PerformWorkContainer},
     Profile: {screen: ProfileContainer},
+    ChangePassword: {screen: ChangePasswordContainer},
   },
   {
     initialRouteName: 'Welcom'    

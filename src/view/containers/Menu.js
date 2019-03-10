@@ -55,21 +55,12 @@ export default class Menu extends Component{
         this.props.navigation.goBack();
     } 
 
-    handleProductionPlan = () => {
-        this.props.navigation.navigate('ProductionPlan');
-    }
-
-    handleNotification = () => {
-        this.props.navigation.navigate('Notification');
+    handleChangePassword = () => {
+        this.props.navigation.navigate('ChangePassword');
     }
 
     handleRemindWork = () => {
         this.props.navigation.navigate('RemindWork');
-    }
-
-    handleProfile = () => {
-        console.log(111);
-        this.props.navigation.navigate("Profile");
     }
 
     handleLogOut = async () => {
@@ -107,7 +98,7 @@ export default class Menu extends Component{
                     <View style={{marginTop: 50, marginLeft: 15}}>
                         <TouchableOpacity
                             hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}
-                            onPress={this.handleProductionPlan}
+                            onPress={this.handleChangePassword}
                         >
                             <Text style={styles.textMenu}>
                                 {String.changePassword}

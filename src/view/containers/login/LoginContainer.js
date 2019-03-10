@@ -15,6 +15,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import Color from "../../../res/Colors";
 import { loginApi, getPublicUser } from "../../../data/services/VfscApi";
 import TokenLocal from "../../../data/local/TokenLocal";
+import PasswordLocal from "../../../data/local/PasswordLocal";
 import String from "../../../res/Strings";
 
 export default class LoginContainer extends Component {
@@ -27,7 +28,8 @@ export default class LoginContainer extends Component {
     this.state = {
       phoneNumber: "",
       password: "",
-      isShowPassword: false
+      isShowPassword: false,
+      messageError: ""
     };
   }
 
@@ -50,23 +52,29 @@ export default class LoginContainer extends Component {
   forgotPassword = () => {};
 
   handleLogin = async () => {
-    console.log(11);
     let body = {
       usernameOrPhone: this.state.phoneNumber,
       password: this.state.password
     };
     let response = await loginApi(body);
-    await TokenLocal.setAccessToken(response.accessToken);
-    let accessToken = "";
-    await TokenLocal.getAccessToken().then(data => {
-      accessToken = data;
-    });
+    if (response.accessToken) {
+      await PasswordLocal.setPassWord(this.state.password);
+      await TokenLocal.setAccessToken(response.accessToken);
+      let accessToken = "";
+      await TokenLocal.getAccessToken().then(data => {
+        accessToken = data;
+      });
 
-    if (accessToken !== "") {
-      let user = await getPublicUser(accessToken);
-      if (user.roles[0] !== undefined && user.roles[0] === "ROLE_FARMER") {
-        this.props.navigation.navigate("RemindWork");
+      if (accessToken !== "") {
+        let user = await getPublicUser(accessToken);
+        if (user.roles[0] !== undefined && user.roles[0] === "ROLE_FARMER") {
+          this.props.navigation.navigate("RemindWork");
+        }
       }
+    } else {
+      this.setState({
+        messageError: String.wrongUsernameOrPassword
+      });
     }
   };
 
@@ -109,6 +117,18 @@ export default class LoginContainer extends Component {
                 >
                   {String.signIn}
                 </Text>
+                {this.state.messageError !== "" ? (
+                  <Text
+                    style={{
+                      paddingTop: 10,
+                      fontSize: 15,
+                      fontWeight: "normal",
+                      color: "red"
+                    }}
+                  >
+                    {this.state.messageError}
+                  </Text>
+                ) : null}
                 <Text
                   style={{
                     paddingTop: 40,
