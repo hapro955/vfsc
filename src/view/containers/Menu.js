@@ -28,6 +28,7 @@ export default class Menu extends Component{
         super(props);
         this.state = {
             name: "",
+            nameOrg: "",
         }
     }
 
@@ -44,8 +45,10 @@ export default class Menu extends Component{
 
     async componentDidMount() {
         let infoUser = await this.getInfoUser();
-        this.setState({name: infoUser.name});
-        console.log(1111, infoUser);
+        this.setState({
+            name: infoUser.name,
+            nameOrg: infoUser.org.name
+        });
     }
 
     goBack = () => {
@@ -69,8 +72,9 @@ export default class Menu extends Component{
         this.props.navigation.navigate("Profile");
     }
 
-    handleLogOut = () => {
-        
+    handleLogOut = async () => {
+        await TokenLocal.removeAcessToken();
+        this.props.navigation.navigate("Login");
     }
 
     render(){
@@ -90,11 +94,11 @@ export default class Menu extends Component{
                         </View>
                         <View style={{height: 70, justifyContent: "center"}}>
                             <Text style={{fontSize: 18, fontWeight: "bold", color: Color.textWhite}}>
+                                {this.state.nameOrg}
+                            </Text>
+                            <Text style={{fontSize: 14, fontWeight: "normal", color: Color.textBlack}}>
                                 {this.state.name}
                             </Text>
-                            {/* <Text style={{fontSize: 14, fontWeight: "bold", color: Color.textWhite}}>
-                                {this.state.email}
-                            </Text> */}
                         </View>
                     </View>
                     <View style={styles.boxStar}>
@@ -106,18 +110,10 @@ export default class Menu extends Component{
                             onPress={this.handleProductionPlan}
                         >
                             <Text style={styles.textMenu}>
-                                {String.productionPlan}
+                                {String.changePassword}
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.touchOpacity}
-                            hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}
-                            onPress={this.handleNotification}
-                        >
-                            <Text style={styles.textMenu}>
-                                {String.notification}
-                            </Text>
-                        </TouchableOpacity>
+        
                         <TouchableOpacity
                             style={styles.touchOpacity}
                             hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}
@@ -127,19 +123,11 @@ export default class Menu extends Component{
                                 {String.remindWork}
                             </Text>
                         </TouchableOpacity>
+                
                         <TouchableOpacity
                             style={styles.touchOpacity}
                             hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}
-                            onPress={this.handleProfile}
-                        >
-                            <Text style={styles.textMenu}>
-                                {String.profile}
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.touchOpacity}
-                            hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}
-                            onPress={this.handleLogOuts}
+                            onPress={this.handleLogOut}
                         >
                             <Text style={styles.textMenu}>
                                 {String.logOut}

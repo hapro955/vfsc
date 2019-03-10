@@ -16,7 +16,7 @@ import ScrollableTabView, {
   DefaultTabBar
 } from "react-native-scrollable-tab-view";
 import NormalTabBar from "../../components/NormalTabBarComponent";
-import { remindWork } from "../../../data/services/VfscApi";
+import { remindWork, getNotification } from "../../../data/services/VfscApi";
 import TokenLocal from "../../../data/local/TokenLocal";
 
 const height = Dimensions.get("window").height;
@@ -34,17 +34,14 @@ export default class RemindWorkContainer extends Component {
         borderBottomWidth: 0,
         backgroundColor: Color.bgGreen
       },
-      headerLeft: (
+      headerLeft: null,
+      headerRight: (
         <TouchableOpacity
-          style={{ marginLeft: 20 }}
+          style={{ marginRight: 20 }}
           hitSlop={{ top: 5, left: 5, bottom: 5, right: 5 }}
-          onPress={() => {
-            console.log(1111);
-            _this.props.navigation.goBack();
-            //navigation.getParam("goBack");
-          }}
+          onPress={navigation.getParam("goHome")}
         >
-          <Icon name="chevron-left" size={15} color={Color.textWhite} />  
+          <Icon name="bars" size={15} color={Color.textWhite} />
         </TouchableOpacity>
       )
     };
@@ -54,50 +51,40 @@ export default class RemindWorkContainer extends Component {
     console.log("s remindWorkContainer");
     super(props);
     this.state = {
-      today: "Thứ Ba ngày 29/1/2019",
-      // work: [],
-      // period: [],
-      // notify: [],
       remindWork: [],
+      notification: []
     };
   }
 
   componentWillMount() {
-    _this = this;
+    this.props.navigation.setParams({ goHome: this._goHome });
   }
 
   async componentDidMount() {
-    // let work = [];
-    // let period = [];
-    // let notify = [];
-    let remindWork = await this.getRemindWork();
-    this.setState({remindWork: remindWork});
-    // for(let i = 0; i < remindWork.length; i++) {
-    //   if(remindWork[i].notify !== null) {
-    //     notify.push(remindWork[i].notify);
-    //   }else if(remindWork[i].period !== null) {
-    //     period.push(remindWork[i].period);
-    //   }else if(remindWork[i].work !== null) {
-    //     work.push(remindWork[i].work);
-    //   }
-    // }
-    // this.setState({
-    //   work: work,
-    //   period: period,
-    //   notify: notify,
-    // });
+    let accessToken = "";
+    await TokenLocal.getAccessToken().then(data => {
+      accessToken = data;
+    });
+    let remindWork = await this._getRemindWork(accessToken);
+    let notification = await this._getNotification(accessToken);
+    console.log(222, notification);
+    console.log(111, remindWork);
+    this.setState({
+      remindWork: remindWork,
+      notification: notification
+    });
   }
 
-  getRemindWork = async () => {
-    let accessToken = "";
-    await TokenLocal.getAccessToken().then(data => {  
-      accessToken = data; 
-    });
-    return (notification = await remindWork(accessToken));
+  _goHome = () => {
+    this.props.navigation.navigate("Menu");
   };
 
-  goBack = () => {
-    this.props.navigation.goBack();
+  _getRemindWork = async accessToken => {
+    return await remindWork(accessToken);
+  };
+
+  _getNotification = async accessToken => {
+    return await getNotification(accessToken);
   };
 
   renderTabBarChild = () => {
@@ -142,7 +129,7 @@ export default class RemindWorkContainer extends Component {
     );
   };
 
-  renderProductionPlanDay = () => {
+  _renderRemindToday = () => {
     return (
       <ScrollView
         style={{ width: "100%", height: "100%", backgroundColor: "#F1F1F1" }}
@@ -154,25 +141,118 @@ export default class RemindWorkContainer extends Component {
             height: "100%",
             alignItems: "center"
           }}
-        > 
-          <View style={{marginBottom: 10}}/>
+        >
+          <View style={{ marginBottom: 10 }} />
           <FlatList
             style={{ width: "90%", height: "100%" }}
             data={this.state.remindWork}
-            renderItem={this.renderListProductionPlanDay}
+            renderItem={this._renderListRemindWork}
+            keyExtractor={(item, index) => `remindWork-${index}`}
           />
         </View>
       </ScrollView>
     );
   };
 
-  renderProductionPlanWeek = () => {
+  _renderNotification = () => {
     return (
-      <ScrollView tabLabel="Thông báo">
-        <View style={{ flex: 1, backgroundColor: "yellow" }}>
-          <Text>da xong</Text>
+      <ScrollView
+        style={{ width: "100%", height: "100%", backgroundColor: "#F1F1F1" }}
+        tabLabel="Thông báo"
+      >
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            alignItems: "center"
+          }}
+        >
+          <View style={{ marginBottom: 10 }} />
+          <FlatList
+            style={{ width: "90%", height: "100%" }}
+            data={this.state.notification}
+            renderItem={this._renderListNotificatioin}
+            keyExtractor={(item, index) => `notification-${index}`}
+          />
         </View>
       </ScrollView>
+    );
+  };
+
+  _renderListNotificatioin = (notification) => {
+    let item = notification.item;
+    let level = "";
+    let styleTextWithLevel = {};
+    if (item.level == 0) {
+      level = String.noraml;
+      styleTextWithLevel = { color: Color.textBlack };
+    } else if (item.level == 1) {
+      level = String.important;
+      styleTextWithLevel = { color: Color.textGreen };
+    } else if (item.level == 2) {
+      level = String.doItNow;
+      styleTextWithLevel = { color: Color.textRed };
+    }
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: Color.bgWhite,
+          marginBottom: 20,
+          borderRadius: 5,
+          alignItems: "center"
+        }}
+      >
+        <View style={{ width: "90%" }}>
+          <View
+            style={{
+              marginBottom: 20,
+              marginTop: 15,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: Color.textBlack
+              }}
+              numberOfLines={2}
+            >
+              {item.description}
+            </Text>
+          </View>
+          <View style={{ marginBottom: 20, flexDirection: "row" }}>
+            <View style={{ width: "100%" }}>
+              <Text style={styles.textTitle}>{String.level}</Text>
+              <Text style={[styles.textContent, styleTextWithLevel]}>
+                {level}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ marginBottom: 30, alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() => {
+                this.props.navigation.navigate("PerformWork", {
+                  item: item
+                });
+              }}
+              style={styles.buttonPerformWork}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "bold",
+                  color: Color.textWhite
+                }}
+              >
+                {String.performTheWork}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     );
   };
 
@@ -186,15 +266,27 @@ export default class RemindWorkContainer extends Component {
     );
   };
 
-  renderListProductionPlanDay = ({ item }) => {
-    console.log(item);
-    let title="";
-    if(item.work !== null) {
-      title = "Công việc thời điểm: " + `\n`+ item.work.description;
-    }else if(item.notify !== null) {
-      title = "Thông báo: " + `\n` +item.notify.description;
-    }else if(item.period !== null) {
-      title = "Công việc định kì: " + `\n` + item.period.description;
+  _renderListRemindWork = ({ item }) => {
+    let arrayDate = [];
+    for (let i = 0; i < item.dateAlert.length; i++) {
+      let date = new Date(item.dateAlert[i]);
+      arrayDate.push(date.toLocaleDateString("en-GB"));
+    }
+    let title = "";
+    let contentTitle = "";
+    let hour = "";
+    if (item.work !== null) {
+      title = "Công việc thời điểm: ";
+      contentTitle = item.work.description;
+      hour = item.work.hour;
+    } else if (item.notify !== null) {
+      title = "Thông báo: ";
+      contentTitle = item.notify.description;
+      hour = item.notify.hour;
+    } else if (item.period !== null) {
+      title = "Công việc định kì: ";
+      contentTitle = item.period.description;
+      hour = item.period.hour;
     }
     return (
       <View
@@ -207,50 +299,34 @@ export default class RemindWorkContainer extends Component {
         }}
       >
         <View style={{ width: "90%" }}>
-          <View style={{ marginBottom: 20, marginTop: 15 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                color: Color.textBlack
-              }}
-            >
-              {title}
-            </Text>
+          <View style={{ marginBottom: 15, marginTop: 15 }}>
+            <Text style={styles.textTitle}>{title}</Text>
+            <Text style={styles.textContent}>{contentTitle}</Text>
           </View>
-          <View style={{ marginBottom: 20, flexDirection: "row" }}>
-            <View style={{ width: "60%" }}>
-              <Text style={styles.textTitle}>{String.codePlan}</Text>
+
+          <View style={{ marginBottom: 15 }}>
+            <Text style={styles.textTitle}>{String.doneAt}</Text>
+            {hour !== undefined ? (
               <Text style={styles.textContent} numberOfLines={1}>
-                {item.codePlan}
+                {hour}
+                {"h"}
               </Text>
+            ) : null}
+          </View>
+
+          <View style={{ marginBottom: 15, flexDirection: "row" }}>
+            <View style={{ width: "60%" }}>
+              <Text style={styles.textTitle}>{String.doneOnDay}</Text>
+              {arrayDate.map(item => {
+                return (
+                  <Text style={styles.textContent} numberOfLines={1}>
+                    {item}
+                  </Text>
+                );
+              })}
             </View>
-            <View style={{ width: "40%", alignItems: "flex-end" }}>
-              <TouchableOpacity style={styles.buttonDetail}>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: "#87CB4C",
-                    fontWeight: "bold",
-                    padding: 5
-                  }}
-                >
-                  {String.seeDetails}
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
-          <View style={{ marginBottom: 20 }}>
-            <Text style={styles.textTitle}>{String.placeOfImplementation}</Text>
-            <Text style={styles.textContent} numberOfLines={1}>
-              {item.area}
-            </Text>
-          </View>
-          <View style={{ marginBottom: 30 }}>
-            <Text style={styles.textTitle}>{String.workContent}</Text>
-            <Text style={styles.textContent} numberOfLines={1}>
-              {item.content}
-            </Text>
-          </View>
+
           <View style={{ marginBottom: 30, alignItems: "center" }}>
             <TouchableOpacity style={styles.buttonPerformWork}>
               <Text
@@ -278,8 +354,8 @@ export default class RemindWorkContainer extends Component {
           renderTabBar={this.renderTabBarChild}
           initialPage={0}
         >
-          {this.renderProductionPlanDay()}
-          {this.renderProductionPlanWeek()}
+          {this._renderRemindToday()}
+          {this._renderNotification()}
           {this.renderProductionPlanMonth()}
         </ScrollableTabView>
       </View>
@@ -297,7 +373,7 @@ const styles = StyleSheet.create({
     marginBottom: 5
   },
   textContent: {
-    fontSize: 13,
+    fontSize: 14,
     color: Color.textBlack,
     width: 250
   },
@@ -314,6 +390,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "70%",
     height: 40
-  },
+  }
 });
-

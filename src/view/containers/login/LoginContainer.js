@@ -7,7 +7,7 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  KeyboardAvoidingView,
+  ScrollView,
   TouchableWithoutFeedback,
   Keyboard
 } from "react-native";
@@ -15,6 +15,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import Color from "../../../res/Colors";
 import { loginApi, getPublicUser } from "../../../data/services/VfscApi";
 import TokenLocal from "../../../data/local/TokenLocal";
+import String from "../../../res/Strings";
 
 export default class LoginContainer extends Component {
   static navigationOptions = {
@@ -60,11 +61,11 @@ export default class LoginContainer extends Component {
     await TokenLocal.getAccessToken().then(data => {
       accessToken = data;
     });
-    
+
     if (accessToken !== "") {
       let user = await getPublicUser(accessToken);
       if (user.roles[0] !== undefined && user.roles[0] === "ROLE_FARMER") {
-        this.props.navigation.navigate("Menu");
+        this.props.navigation.navigate("RemindWork");
       }
     }
   };
@@ -74,9 +75,9 @@ export default class LoginContainer extends Component {
   render() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           <StatusBar barStyle="dark-content" />
-          <View style={{ paddingTop: 20 }}>
+          <ScrollView style={{ paddingTop: 20 }}>
             <View
               style={{ width: "100%", height: "100%", alignItems: "center" }}
             >
@@ -92,31 +93,31 @@ export default class LoginContainer extends Component {
                   style={{
                     paddingTop: 15,
                     fontSize: 20,
-                    fontWeight: "bold",
+                    fontWeight: "normal",
                     color: "#5B5B5B"
                   }}
                 >
-                  {"Chào mừng trở lại"}
+                  {String.welcomeBack}
                 </Text>
                 <Text
                   style={{
                     paddingTop: 10,
                     fontSize: 15,
-                    fontWeight: "bold",
+                    fontWeight: "normal",
                     color: "#D1CFCF"
                   }}
                 >
-                  {"Đăng nhập hệ thống"}
+                  {String.signIn}
                 </Text>
                 <Text
                   style={{
                     paddingTop: 40,
                     fontSize: 15,
-                    fontWeight: "bold",
+                    fontWeight: "normal",
                     color: "#5B5B5B"
                   }}
                 >
-                  {"Số điện thoại"}
+                  {String.phoneNumber}
                 </Text>
                 <View
                   style={{
@@ -137,11 +138,11 @@ export default class LoginContainer extends Component {
                   style={{
                     paddingTop: 10,
                     fontSize: 15,
-                    fontWeight: "bold",
+                    fontWeight: "normal",
                     color: "#5B5B5B"
                   }}
                 >
-                  {"Mật khẩu"}
+                  {String.passWord}
                 </Text>
                 <View style={styles.containerPassword}>
                   <View style={{ width: "85%" }}>
@@ -179,11 +180,11 @@ export default class LoginContainer extends Component {
                       style={{
                         paddingTop: 20,
                         fontSize: 15,
-                        fontWeight: "bold",
+                        fontWeight: "normal",
                         color: "#D1CFCF"
                       }}
                     >
-                      {"Quên mật khẩu?"}
+                      {String.forgotPassWord}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -199,7 +200,7 @@ export default class LoginContainer extends Component {
                         color: "#FFFFFF"
                       }}
                     >
-                      {"Đăng nhập"}
+                      {String.logIn}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -213,11 +214,11 @@ export default class LoginContainer extends Component {
                   <Text
                     style={{
                       fontSize: 15,
-                      fontWeight: "bold",
+                      fontWeight: "normal",
                       color: "#D1CFCF"
                     }}
                   >
-                    {"Người dùng mới? "}
+                    {String.newUser}{" "}
                   </Text>
                   <TouchableOpacity
                     style={{}}
@@ -227,18 +228,18 @@ export default class LoginContainer extends Component {
                     <Text
                       style={{
                         fontSize: 15,
-                        fontWeight: "bold",
+                        fontWeight: "normal",
                         color: "#0462FD"
                       }}
                     >
-                      {"Đăng kí"}
+                      {String.registration}
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
-          </View>
-        </KeyboardAvoidingView>
+          </ScrollView>
+        </View>
       </TouchableWithoutFeedback>
     );
   }

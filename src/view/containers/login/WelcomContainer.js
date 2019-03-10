@@ -17,7 +17,7 @@ export default class WelcomContainer extends React.Component{
             if(accessToken) {
                 let user = await getPublicUser(accessToken)
                 if(user.roles[0] !== undefined && user.roles[0] === "ROLE_FARMER") {
-                    this.props.navigation.navigate('Menu');
+                    this.props.navigation.navigate('RemindWork');
                 } else {
                     this.props.navigation.navigate('Login');
                 }
