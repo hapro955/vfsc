@@ -90,33 +90,35 @@ export default class LoginContainer extends Component {
               style={{ width: "100%", height: "100%", alignItems: "center" }}
             >
               <View style={{ width: "80%", height: "100%" }}>
-                <View style={{ paddingTop: 40 }}>
+                <View style={{ paddingTop: 40, flexDirection: "row" }}>
                   <Image
                     style={{ width: 60, height: 90 }}
                     source={require("../../../assets/images/logo_black.png")}
                     resizeMode={"cover"}
                   />
+                  <View style={{marginLeft: 20}}>
+                    <Text
+                      style={{
+                        paddingTop: 15,
+                        fontSize: 20,
+                        fontWeight: "normal",
+                        color: "#5B5B5B"
+                      }}
+                    >
+                      {String.welcomeBack}
+                    </Text>
+                    <Text
+                      style={{
+                        paddingTop: 10,
+                        fontSize: 15,
+                        fontWeight: "normal",
+                        color: "#D1CFCF"
+                      }}
+                    >
+                      {String.signIn}
+                    </Text>
+                  </View>
                 </View>
-                <Text
-                  style={{
-                    paddingTop: 15,
-                    fontSize: 20,
-                    fontWeight: "normal",
-                    color: "#5B5B5B"
-                  }}
-                >
-                  {String.welcomeBack}
-                </Text>
-                <Text
-                  style={{
-                    paddingTop: 10,
-                    fontSize: 15,
-                    fontWeight: "normal",
-                    color: "#D1CFCF"
-                  }}
-                >
-                  {String.signIn}
-                </Text>
                 {this.state.messageError !== "" ? (
                   <Text
                     style={{

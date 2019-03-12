@@ -4,9 +4,10 @@ import {
   notificationUrl,
   uploadImageUrl,
   getTodayTasksUrl,
-  changePasswordUrl
+  changePasswordUrl,
+  workDoneUrl
 } from "./VfscUrl";
-function getDefaultHeader() {
+function getDefaultHeader() { 
   let defaultHeader = {
     Accept: "application/json",
     "Content-type": "application/json"
@@ -79,6 +80,26 @@ async function put(url, value, accessToken) {
   }
 }
 
+async function getWithNumber(url, accessToken, page, size) {
+  try {
+    let response = await fetch(url + page + "/" + size, {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + accessToken
+      }
+    });
+    let responseJson = await response.json();
+    return responseJson;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getWorkDone(accessToken, page, size) {
+  let reponse = await getWithNumber(workDoneUrl,accessToken, page, size);
+  return reponse;
+}
+
 async function changePassword(value, accessToken) {
   let reponse = await put(changePasswordUrl, value, accessToken);
   return reponse;
@@ -115,5 +136,6 @@ module.exports = {
   getNotification: getNotification,
   uploadImage: uploadImage,
   remindWork: remindWork,
-  changePassword: changePassword
+  changePassword: changePassword,
+  getWorkDone: getWorkDone,
 };

@@ -9,7 +9,8 @@ import {
   Image,
   ScrollView,
   TextInput,
-  FlatList
+  FlatList,
+  Platform
 } from "react-native";
 import String from "../../../res/Strings";
 import Color from "../../../res/Colors";
@@ -69,7 +70,6 @@ export default class PerformWorkContainer extends Component {
       contentDone: ""
     };
     console.log("perform work");
-    console.log(1111, this.props.navigation.state.params.item);
   }
 
   async componentWillMount() {}
@@ -92,12 +92,8 @@ export default class PerformWorkContainer extends Component {
         console.log("User tapped custom button: ", response.customButton);
       } else {
         let image = this.state.avatarSource;
-        image.push({
-          data: response.data,
-          source: response.uri,
-          uri: response.path
-        });
-        console.log(111, image);
+        image.push({response});
+        console.log("array image", image);
         this.setState({
           avatarSource: image
         });
@@ -113,7 +109,7 @@ export default class PerformWorkContainer extends Component {
           horizontal={true}
           data={this.state.avatarSource}
           renderItem={({ item }) => this._renderImage(item)}
-          keyExtractor={(item, index) => `item-image-${index}`}
+          keyExtractor={(item, index) => `item-image-${index}`} 
         />
       </View>
     );
@@ -123,7 +119,7 @@ export default class PerformWorkContainer extends Component {
     return (
       <View style={{ marginRight: 10 }}>
         <Image
-          source={{ uri: item.source }}
+          source={{ uri: item.response.uri }}
           style={{ height: 100, width: 100 }}
         />
       </View>
@@ -142,7 +138,6 @@ export default class PerformWorkContainer extends Component {
         let video = this.state.videoSource;
 
         video.push({ path: response.path, uri: response.uri });
-        console.log(1111, video);
         this.setState({
           videoSource: video
         });
@@ -172,22 +167,51 @@ export default class PerformWorkContainer extends Component {
     );
   }
 
+  createFormData = (photo) => {
+    const data = new FormData();
+  
+    data.append("file", {
+      name: photo.fileName,
+      type: photo.type,
+      uri:
+        Platform.OS === "android" ? photo.uri : photo.uri.replace("file://", "")
+    });
+  
+    // Object.keys(body).forEach(key => {
+    //   data.append(key, body[key]);
+    // });
+  
+    return data;
+  };
+
   _handleFinish = async () => {
     let accessToken = "";
     await TokenLocal.getAccessToken().then(data => {
       accessToken = data;
     });
-
-    let photo = { uri: this.state.avatarSource[0].uri};
-    let body = new FormData();
-    body.append("files", {
-      uri: photo.uri,
-      name: "image.jpg",
-      type: "multipart/form-data"
-    });
-    console.log(111111, bod);
-    let upload = await uploadImage(body, accessToken);
-    console.log(3333, upload);
+    console.log("access token", accessToken);
+    let photo = this.state.avatarSource[0].response; 
+    console.log("uri image", photo);
+  
+    fetch("http://14.160.32.79:5005/farmer/metadata/upload", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + accessToken
+      },
+      body: this.createFormData(photo)
+    })
+      .then(response => response.json())
+      .then(response => {
+        console.log("upload succes", response);
+        alert("Upload success!"); 
+        this.setState({ photo: null });
+      })
+      .catch(error => {
+        console.log("upload error", error);
+        alert("Upload failed!");
+      });
+  
+  
   };
 
   render() {

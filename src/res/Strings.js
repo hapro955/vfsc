@@ -56,4 +56,5 @@ export default {
     passwordChangeHasNotBeenSuccessful: "Thay đổi mật khẩu không thành công!",
     newPasswordMustHaveAtLeast4Characters: "Mật khẩu mới phải có ít nhất 4 kí tự!",
     changePasswordSuccessfully: "Thay đổi mật khẩu thành công!",
+    seeMore: "Xem tiếp"
 }

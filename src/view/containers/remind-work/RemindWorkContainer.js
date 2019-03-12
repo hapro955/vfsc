@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  FlatList
+  FlatList,
+  ActivityIndicator
 } from "react-native";
 import String from "../../../res/Strings";
 import Color from "../../../res/Colors";
@@ -16,7 +17,11 @@ import ScrollableTabView, {
   DefaultTabBar
 } from "react-native-scrollable-tab-view";
 import NormalTabBar from "../../components/NormalTabBarComponent";
-import { remindWork, getNotification } from "../../../data/services/VfscApi";
+import {
+  remindWork,
+  getNotification,
+  getWorkDone
+} from "../../../data/services/VfscApi";
 import TokenLocal from "../../../data/local/TokenLocal";
 
 const height = Dimensions.get("window").height;
@@ -52,8 +57,11 @@ export default class RemindWorkContainer extends Component {
     super(props);
     this.state = {
       remindWork: [],
-      notification: []
+      notification: [],
+      workDone: [],
+      isLoading: false,
     };
+    this.page = 0;
   }
 
   componentWillMount() {
@@ -67,11 +75,11 @@ export default class RemindWorkContainer extends Component {
     });
     let remindWork = await this._getRemindWork(accessToken);
     let notification = await this._getNotification(accessToken);
-    console.log(222, notification);
-    console.log(111, remindWork);
+    let workDone = await this._getWorkDone(accessToken, this.page, 1);
     this.setState({
       remindWork: remindWork,
-      notification: notification
+      notification: notification,
+      workDone: workDone.content
     });
   }
 
@@ -85,6 +93,12 @@ export default class RemindWorkContainer extends Component {
 
   _getNotification = async accessToken => {
     return await getNotification(accessToken);
+  };
+
+  _getWorkDone = async (accessToken, page, size) => {
+    let reponse = await getWorkDone(accessToken, page, size);
+    if (reponse) this.page = this.page + 1;
+    return reponse;
   };
 
   renderTabBarChild = () => {
@@ -179,7 +193,7 @@ export default class RemindWorkContainer extends Component {
     );
   };
 
-  _renderListNotificatioin = (notification) => {
+  _renderListNotificatioin = notification => {
     let item = notification.item;
     let level = "";
     let styleTextWithLevel = {};
@@ -256,15 +270,97 @@ export default class RemindWorkContainer extends Component {
     );
   };
 
-  renderProductionPlanMonth = () => {
+  _renderWorkDone = () => {
+    console.log(1111, this.state.workDone);
     return (
-      <ScrollView tabLabel="Đã làm">
-        <View style={{ flex: 1, backgroundColor: "yellow" }}>
-          <Text>da xong</Text>
+      <ScrollView
+        style={{ width: "100%", height: "100%", backgroundColor: "#F1F1F1" }}
+        tabLabel="Đã làm"
+      >
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            alignItems: "center"
+          }}
+        >
+          <View style={{ marginBottom: 10 }} />
+          <FlatList
+            style={{ width: "90%", height: "100%" }}
+            data={this.state.workDone}
+            renderItem={this._renderListWorkDone}
+            ListFooterComponent={this._renderFooterWorkDone.bind(this)}
+            keyExtractor={(item, index) => `workDone-${index}`}
+          />
         </View>
       </ScrollView>
     );
   };
+
+  _renderListWorkDone = ({ item }) => {
+    let title = "";
+    let contentTitle = "";
+    if (item.work !== null) {
+      title = "Công việc thời điểm: ";
+      contentTitle = item.work.description;
+    } else if (item.notify !== null) {
+      title = "Thông báo: ";
+      contentTitle = item.notify.description;
+    } else if (item.period !== null) {
+      title = "Công việc định kì: ";
+      contentTitle = item.period.description;
+    }
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: Color.bgWhite,
+          marginBottom: 20,
+          borderRadius: 5,
+          alignItems: "center"
+        }}
+      >
+        <View style={{ width: "90%" }}>
+          <View style={{ marginBottom: 15, marginTop: 15 }}>
+            <Text style={styles.textTitle}>{title}</Text>
+            <Text style={styles.textContent}>{contentTitle}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  _renderFooterWorkDone() {
+    return (
+      <View style={styles.footer}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={this._loadMoreWorkDone}
+          style={styles.loadMoreBtn}
+        >
+          <Text style={styles.btnText}>
+            {String.seeMore}
+          </Text>
+          {this.state.isLoading ? (
+            <ActivityIndicator color={Color.textWhite} style={{ marginLeft: 8 }} />
+          ) : null}
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  _loadMoreWorkDone = async() => {
+    this.setState({isLoading: true});
+    let accessToken = "";
+    await TokenLocal.getAccessToken().then(data => {
+      accessToken = data;
+    });
+    let workDone = await this._getWorkDone(accessToken, this.page, 1);
+    this.setState({
+      workDone: [...this.state.workDone, ...workDone.content],
+      isLoading: false
+    });
+  }
 
   _renderListRemindWork = ({ item }) => {
     let arrayDate = [];
@@ -328,7 +424,14 @@ export default class RemindWorkContainer extends Component {
           </View>
 
           <View style={{ marginBottom: 30, alignItems: "center" }}>
-            <TouchableOpacity style={styles.buttonPerformWork}>
+            <TouchableOpacity
+              style={styles.buttonPerformWork}
+              onPress={() => {
+                this.props.navigation.navigate("PerformWork", {
+                  item: item
+                });
+              }}
+            >
               <Text
                 style={{
                   fontSize: 13,
@@ -356,7 +459,7 @@ export default class RemindWorkContainer extends Component {
         >
           {this._renderRemindToday()}
           {this._renderNotification()}
-          {this.renderProductionPlanMonth()}
+          {this._renderWorkDone()}
         </ScrollableTabView>
       </View>
     );
@@ -390,5 +493,23 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "70%",
     height: 40
-  }
+  },
+  footer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadMoreBtn: {
+    height: 40,
+    backgroundColor: Color.bgTabBar,
+    borderRadius: 5,
+    paddingLeft: 10,
+    paddingRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnText: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: Color.textWhite
+  },
 });
