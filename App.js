@@ -12,6 +12,7 @@ import ProductionPlanContainer from './src/view/containers/production-plan/Produ
 
 //remind-work
 import RemindWorkContainer from './src/view/containers/remind-work/RemindWorkContainer';
+import WorkDetailContainer from './src/view/containers/remind-work/WorkDetailContainer';
 
 //notification
 import NotificationContainer from './src/view/containers/notification/NotificationContainer';
@@ -34,6 +35,7 @@ const AppNavigator = createStackNavigator(
     PerformWork: {screen: PerformWorkContainer},
     Profile: {screen: ProfileContainer},
     ChangePassword: {screen: ChangePasswordContainer},
+    WorkDetail: {screen: WorkDetailContainer},
   },
   {
     initialRouteName: 'Welcom'    

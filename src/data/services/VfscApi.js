@@ -5,7 +5,8 @@ import {
   uploadImageUrl,
   getTodayTasksUrl,
   changePasswordUrl,
-  workDoneUrl
+  workDoneUrl,
+  suppliesUrl
 } from "./VfscUrl";
 function getDefaultHeader() { 
   let defaultHeader = {
@@ -95,6 +96,11 @@ async function getWithNumber(url, accessToken, page, size) {
   }
 }
 
+async function getSupplies(accessToken) {
+    let reponse = await get(suppliesUrl, accessToken);
+    return reponse;
+}
+
 async function getWorkDone(accessToken, page, size) {
   let reponse = await getWithNumber(workDoneUrl,accessToken, page, size);
   return reponse;
@@ -138,4 +144,5 @@ module.exports = {
   remindWork: remindWork,
   changePassword: changePassword,
   getWorkDone: getWorkDone,
+  getSupplies: getSupplies,
 };

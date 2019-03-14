@@ -20,7 +20,8 @@ import NormalTabBar from "../../components/NormalTabBarComponent";
 import {
   remindWork,
   getNotification,
-  getWorkDone
+  getWorkDone,
+  getSupplies
 } from "../../../data/services/VfscApi";
 import TokenLocal from "../../../data/local/TokenLocal";
 
@@ -59,7 +60,9 @@ export default class RemindWorkContainer extends Component {
       remindWork: [],
       notification: [],
       workDone: [],
+      supplies: [],
       isLoading: false,
+      showSeemore: true
     };
     this.page = 0;
   }
@@ -76,13 +79,19 @@ export default class RemindWorkContainer extends Component {
     let remindWork = await this._getRemindWork(accessToken);
     let notification = await this._getNotification(accessToken);
     let workDone = await this._getWorkDone(accessToken, this.page, 1);
+    let supplies = await this._getSupplies(accessToken);
+    this.totalElements = workDone.totalElements;
     this.setState({
       remindWork: remindWork,
       notification: notification,
-      workDone: workDone.content
+      workDone: workDone.content,
+      supplies: supplies
     });
   }
 
+  _getSupplies = async accessToken => {
+    return await getSupplies(accessToken);
+  };
   _goHome = () => {
     this.props.navigation.navigate("Menu");
   };
@@ -271,7 +280,6 @@ export default class RemindWorkContainer extends Component {
   };
 
   _renderWorkDone = () => {
-    console.log(1111, this.state.workDone);
     return (
       <ScrollView
         style={{ width: "100%", height: "100%", backgroundColor: "#F1F1F1" }}
@@ -325,6 +333,27 @@ export default class RemindWorkContainer extends Component {
             <Text style={styles.textTitle}>{title}</Text>
             <Text style={styles.textContent}>{contentTitle}</Text>
           </View>
+
+          <View style={{ marginBottom: 30, alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() => {
+                this.props.navigation.navigate("WorkDetail", {
+                  item: item
+                });
+              }}
+              style={styles.buttonDetail}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "bold",
+                  color: Color.textWhite
+                }}
+              >
+                {String.seeDetails}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -333,24 +362,27 @@ export default class RemindWorkContainer extends Component {
   _renderFooterWorkDone() {
     return (
       <View style={styles.footer}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={this._loadMoreWorkDone}
-          style={styles.loadMoreBtn}
-        >
-          <Text style={styles.btnText}>
-            {String.seeMore}
-          </Text>
-          {this.state.isLoading ? (
-            <ActivityIndicator color={Color.textWhite} style={{ marginLeft: 8 }} />
-          ) : null}
-        </TouchableOpacity>
+        {this.state.isLoading ? (
+          <ActivityIndicator
+            color={Color.textBlue}
+            style={{ marginBottom: 15 }}
+          />
+        ) : null}
+        {this.state.workDone.length !== this.totalElements ? (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={this._loadMoreWorkDone}
+            style={styles.loadMoreBtn}
+          >
+            <Text style={styles.btnText}>{String.seeMore}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     );
   }
 
-  _loadMoreWorkDone = async() => {
-    this.setState({isLoading: true});
+  _loadMoreWorkDone = async () => {
+    this.setState({ isLoading: true });
     let accessToken = "";
     await TokenLocal.getAccessToken().then(data => {
       accessToken = data;
@@ -360,7 +392,7 @@ export default class RemindWorkContainer extends Component {
       workDone: [...this.state.workDone, ...workDone.content],
       isLoading: false
     });
-  }
+  };
 
   _renderListRemindWork = ({ item }) => {
     let arrayDate = [];
@@ -448,6 +480,87 @@ export default class RemindWorkContainer extends Component {
     );
   };
 
+  _renderSupplies() {
+    return (
+      <ScrollView
+        style={{ width: "100%", height: "100%", backgroundColor: "#F1F1F1" }}
+        tabLabel="Kho"
+      >
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            alignItems: "center"
+          }}
+        >
+          <View style={{ marginBottom: 10 }} />
+          <View
+            style={{
+              width: "96%",
+              alignItems: "center",
+              backgroundColor: Color.bgWhite
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                width: "100%",
+                height: 40
+              }}
+            >
+              <View style={[{ flex: 1 }, styles.supplies]}>
+                <Text style={styles.contentSupplies}>
+                  {String.numericalOrder}
+                </Text>
+              </View>
+              <View style={[{ flex: 3 }, styles.supplies]}>
+                <Text style={styles.contentSupplies}>{String.supplies}</Text>
+              </View>
+              <View style={[{ flex: 2 }, styles.supplies]}>
+                <Text style={styles.contentSupplies}>{String.amount}</Text>
+              </View>
+              <View style={[{ flex: 2 }, styles.supplies]}>
+                <Text style={styles.contentSupplies}>{String.unit}</Text>
+              </View>
+            </View>
+          </View>
+          {this.state.supplies.map((item, index) => {
+            return (
+              <View
+                style={{
+                  width: "96%",
+                  alignItems: "center",
+                  backgroundColor: Color.bgWhite
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    width: "100%",
+                    height: 40
+                  }}
+                >
+                  <View style={[{ flex: 1 }, styles.supplies]}>
+                    <Text style={styles.contentSupplies}>{index + 1}</Text>
+                  </View>
+                  <View style={[{ flex: 3 }, styles.supplies]}>
+                    <Text style={styles.contentSupplies}>{item.name}</Text>
+                  </View>
+                  <View style={[{ flex: 2 }, styles.supplies]}>
+                    <Text style={styles.contentSupplies}>{item.total}</Text>
+                  </View>
+                  <View style={[{ flex: 2 }, styles.supplies]}>
+                    <Text style={styles.contentSupplies}>{item.unitName}</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
+    );
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -460,6 +573,7 @@ export default class RemindWorkContainer extends Component {
           {this._renderRemindToday()}
           {this._renderNotification()}
           {this._renderWorkDone()}
+          {this._renderSupplies()}
         </ScrollableTabView>
       </View>
     );
@@ -494,9 +608,17 @@ const styles = StyleSheet.create({
     width: "70%",
     height: 40
   },
+  buttonDetail: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Color.bgTabBar,
+    borderRadius: 5,
+    width: "50%",
+    height: 40
+  },
   footer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center"
   },
   loadMoreBtn: {
     height: 40,
@@ -504,12 +626,23 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingLeft: 10,
     paddingRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center"
   },
   btnText: {
     fontSize: 13,
     fontWeight: "bold",
     color: Color.textWhite
   },
+  supplies: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 0.5,
+    borderColor: Color.bdBrow
+  },
+  contentSupplies: {
+    fontSize: 12,
+    fontWeight: "normal",
+    color: Color.textBlack
+  }
 });
